@@ -60,8 +60,13 @@ class _LoginFormState extends State<LoginForm> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Image.asset(
+                'assets/logo.png',
+                height: 50,
+              ),
+              const SizedBox(height: 20),
               const Text(
-                'Inciar sesion',
+                'Farolito',
                 style: TextStyle(
                   fontSize: 2.5 * 16,
                   color: Color(0xFF2e2e2e),
@@ -82,13 +87,24 @@ class _LoginFormState extends State<LoginForm> {
                 icon: Icons.lock,
                 isPassword: true,
               ),
+              const Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '¿Olvidaste la contraseña?',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   // Implement your login logic here
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 0, 0, 0),
+                  backgroundColor: const Color(0xFF2e2e2e),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -135,7 +151,7 @@ class _LoginFormState extends State<LoginForm> {
                       ),
                     ),
                     child: const Text(
-                      'Registrate',
+                      'Regístrate',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -173,11 +189,11 @@ class _LoginFormState extends State<LoginForm> {
         filled: true,
         fillColor: Colors.transparent,
         contentPadding: const EdgeInsets.only(left: 30, bottom: 10),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xFFadadad)),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFadadad)),
         ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: const BorderSide(color: Color(0xFFc772ff)),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFc772ff)),
         ),
       ),
     );
