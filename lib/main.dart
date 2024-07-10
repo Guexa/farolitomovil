@@ -76,17 +76,18 @@ class _LoginFormState extends State<LoginForm> {
               const SizedBox(height: 30),
               _buildInputField(
                 controller: _usernameController,
-                hint: 'Usuario',
+                hint: 'Usuario:',
                 icon: Icons.person,
                 isPassword: false,
               ),
               const SizedBox(height: 20),
               _buildInputField(
                 controller: _passwordController,
-                hint: 'Contraseña',
+                hint: 'Contraseña:',
                 icon: Icons.lock,
                 isPassword: true,
               ),
+              const SizedBox(height: 20),
               const Align(
                 alignment: Alignment.centerRight,
                 child: Text(
@@ -94,7 +95,7 @@ class _LoginFormState extends State<LoginForm> {
                   style: TextStyle(
                     color: Colors.blue,
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -124,43 +125,6 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               ),
               const SizedBox(height: 20),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "¿No tienes ninguna cuenta?",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      // Implement your sign-up logic here
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF2e2e2e),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 15,
-                        vertical: 8,
-                      ),
-                    ),
-                    child: const Text(
-                      'Regístrate',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
