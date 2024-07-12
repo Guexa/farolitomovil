@@ -21,9 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          // title: const Text('Farolito'),
-          ),
+      appBar: AppBar(),
       body: Center(
         child: Container(
           width: 280,
@@ -74,7 +72,6 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: () {
-                    // Implement your forgot password logic here
                     print("Olvidaste la contraseña tapped");
                   },
                   child: const Text(
@@ -91,7 +88,6 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  // Implement your login logic here
                   Navigator.pushNamed(context, '/registroUsuario');
                 },
                 style: ElevatedButton.styleFrom(
