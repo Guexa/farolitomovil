@@ -32,8 +32,8 @@ class RegistroUsuarioPage extends StatelessWidget {
             label: 'Perfil',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
-            label: 'Dasaborh',
+            icon: Icon(Icons.bar_chart),
+            label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.store),
