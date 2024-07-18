@@ -88,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/registroUsuario');
+                  Navigator.pushReplacementNamed(context, '/registroUsuario');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2e2e2e),

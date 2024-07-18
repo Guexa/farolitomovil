@@ -8,6 +8,7 @@ class RegistroUsuarioPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Farolito'),
+        automaticallyImplyLeading: false, // Esto oculta la flecha de retroceso
       ),
       body: Center(
         child: Column(
