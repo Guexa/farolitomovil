@@ -1,4 +1,4 @@
-# farolitomovil
+# Farolitomovil
 
 A new Flutter project.
 
