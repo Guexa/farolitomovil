@@ -54,7 +54,7 @@ class CustomDrawer extends StatelessWidget {
                   userRole,
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 16, // Tamaño de fuente ajustado
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -67,9 +67,7 @@ class CustomDrawer extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.file_upload),
                   title: Text('Subir foto'),
-                  onTap: () {
-                    // Acción al hacer clic
-                  },
+                  onTap: () {},
                 ),
                 ListTile(
                   leading: Icon(Icons.edit),
@@ -79,9 +77,7 @@ class CustomDrawer extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.logout),
                   title: Text('Cerrar sesión'),
-                  onTap: () {
-                    // Acción al hacer clic
-                  },
+                  onTap: () {},
                 ),
               ],
             ),

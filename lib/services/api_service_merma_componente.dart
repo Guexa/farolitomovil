@@ -1,5 +1,3 @@
-// lib/services/api_service_merma.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:farolitomovil/models/models_merma_componente_dto.dart';

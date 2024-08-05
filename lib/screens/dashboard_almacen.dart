@@ -71,7 +71,6 @@ class _DashboardAlmacenState extends State<DashboardAlmacen> {
   }
 
   Widget _buildDashboard(String option) {
-    // Aquí puedes construir y retornar el widget correspondiente a la opción seleccionada
     return Text('Mostrando: $option');
   }
 }

@@ -5,7 +5,7 @@ import 'package:farolitomovil/models/models_compra.dart';
 import 'nueva_compra.dart';
 
 class Compras extends StatefulWidget {
-  final Function(Widget) onSelectPage; // Agregar esta línea
+  final Function(Widget) onSelectPage;
 
   Compras({required this.onSelectPage});
 

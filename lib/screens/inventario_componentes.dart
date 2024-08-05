@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:farolitomovil/models/models_merma_componente_dto.dart';
-import 'package:farolitomovil/models/models.dart'; // Asegúrate de importar tus modelos
-import 'package:farolitomovil/services/api_service_merma_componente.dart'; // Asegúrate de importar el servicio de merma
+import 'package:farolitomovil/models/models.dart';
+import 'package:farolitomovil/services/api_service_merma_componente.dart';
 
 class InventarioComponentes extends StatefulWidget {
   @override

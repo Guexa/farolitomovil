@@ -26,13 +26,10 @@ class _ContraseniaPageState extends State<ContraseniaPage> {
     setState(() {
       _requestSent = true;
     });
-    // Aquí puedes añadir la lógica para enviar la solicitud de restablecimiento de contraseña
   }
 
   void _resetPassword() {
-    // Aquí puedes añadir la lógica para restablecer la contraseña usando los campos proporcionados
     if (_newPasswordController.text == _confirmPasswordController.text) {
-      // Restablecer la contraseña
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Las contraseñas no coinciden')),

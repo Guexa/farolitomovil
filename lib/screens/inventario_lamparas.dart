@@ -113,7 +113,6 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                             ),
                             TextButton(
                               onPressed: () {
-                                // Aquí puedes agregar la lógica para enviar la cantidad a merma
                                 Navigator.of(context).pop(true);
                               },
                               child: Text('Aceptar'),

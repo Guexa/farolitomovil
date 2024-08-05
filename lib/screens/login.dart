@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:farolitomovil/services/api_service.dart';
 import 'package:farolitomovil/models/auth_response_dto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'contrasenia.dart'; // Importa la página de restablecimiento de contraseña
+import 'contrasenia.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

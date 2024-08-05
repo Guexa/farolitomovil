@@ -1,5 +1,3 @@
-// lib/models/merma_componente_dto.dart
-
 class MermaComponenteDTO {
   final int cantidad;
   final String descripcion;

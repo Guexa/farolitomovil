@@ -13,8 +13,7 @@ class _PerfilPageState extends State<PerfilPage> {
   UserDetailDTO? _userDetail;
   bool _isLoading = true;
   final String baseUrl =
-      'https://your-server-url.com'; // Cambia esto por la URL base correcta de tu servidor
-
+      'https://st4.depositphotos.com/11574170/25191/v/450/depositphotos_251916955-stock-illustration-user-glyph-color-icon.jpg';
   @override
   void initState() {
     super.initState();
@@ -32,12 +31,10 @@ class _PerfilPageState extends State<PerfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Construye la URL de la imagen del usuario
     final imageUrl = _userDetail?.urlImage != null
         ? '$baseUrl${_userDetail?.urlImage}'
         : 'https://static.vecteezy.com/system/resources/previews/008/844/895/non_2x/user-icon-design-free-png.png';
 
-    // Imprime la URL completa en la consola para depuración
     print('Image URL: $imageUrl');
 
     return Scaffold(
