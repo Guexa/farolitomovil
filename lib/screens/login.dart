@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:farolitomovil/services/api_service.dart';
+import 'package:farolitomovil/models/auth_response_dto.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'contrasenia.dart'; // Importa la página de restablecimiento de contraseña
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,12 +14,47 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final email = _usernameController.text;
+    final password = _passwordController.text;
+
+    final authResponse = await _apiService.login(email, password);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (authResponse != null && authResponse.isSuccess) {
+      // Save token and navigate to the next page
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', authResponse.token);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bienvenido, $email!')),
+      );
+
+      Navigator.pushReplacementNamed(context, '/registroUsuario');
+    } else {
+      setState(() {
+        _errorMessage = authResponse?.message ?? 'Error de autenticación';
+      });
+    }
   }
 
   @override
@@ -68,28 +107,31 @@ class _LoginPageState extends State<LoginPage> {
                 isPassword: true,
               ),
               const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    print("Olvidaste la contraseña tapped");
-                  },
-                  child: const Text(
-                    '¿Olvidaste la contraseña?',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.centerRight,
+              //   child: GestureDetector(
+              //     onTap: () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //           builder: (context) => const ContraseniaPage(),
+              //         ),
+              //       );
+              //     },
+              //     child: const Text(
+              //       '¿Olvidaste la contraseña?',
+              //       style: TextStyle(
+              //         color: Colors.blue,
+              //         fontSize: 12,
+              //         fontWeight: FontWeight.w500,
+              //         decoration: TextDecoration.underline,
+              //       ),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/registroUsuario');
-                },
+                onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2e2e2e),
                   shape: RoundedRectangleBorder(
@@ -100,16 +142,26 @@ class _LoginPageState extends State<LoginPage> {
                 child: Container(
                   alignment: Alignment.center,
                   height: 40,
-                  child: const Text(
-                    'Ingresar',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Ingresar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                 ),
               ),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
             ],
           ),
         ),

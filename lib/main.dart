@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/login.dart';
 import 'screens/principal.dart';
+import 'screens/contrasenia.dart'; // Importa la página de restablecimiento de contraseña
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +21,9 @@ class MyApp extends StatelessWidget {
       ),
       home: const LoginPage(),
       routes: {
-        '/registroUsuario': (context) => const RegistroUsuarioPage(),
+        '/registroUsuario': (context) => const PrincipalPage(),
+        '/contrasenia': (context) =>
+            const ContraseniaPage(), // Añadir la ruta para la página de restablecimiento de contraseña
       },
     );
   }
