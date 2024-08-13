@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:farolitomovil/models/auth_response_dto.dart';
 
 class ApiService {
@@ -18,7 +19,13 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      return AuthResponseDTO.fromJson(jsonDecode(response.body));
+      final authResponse = AuthResponseDTO.fromJson(jsonDecode(response.body));
+
+      // Guardar el token en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', authResponse.token);
+
+      return authResponse;
     } else {
       return null;
     }

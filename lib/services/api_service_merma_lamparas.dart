@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/models_merma_componente_dto.dart';
 
-class ApiServiceMerma {
-  final String apiUrl = 'https://localhost:5000/api/Mermas/mermaComponente';
+class ApiService {
+  final String baseUrl = 'https://localhost:5000/api/Mermas/mermasLamparas';
 
-  Future<bool> mandarAMerma(MermaComponenteDTO merma) async {
+  Future<bool> mandarAMerma(
+      int cantidad, String descripcion, int inventariolamparaId) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -15,13 +15,18 @@ class ApiServiceMerma {
       return false;
     }
 
+    final url = Uri.parse('$baseUrl/Mermas/mermaLampara');
     final response = await http.post(
-      Uri.parse(apiUrl),
+      url,
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(merma.toJson()),
+      body: json.encode({
+        'Cantidad': cantidad,
+        'Descripcion': descripcion,
+        'InventariolamparaId': inventariolamparaId,
+      }),
     );
 
     if (response.statusCode == 200) {

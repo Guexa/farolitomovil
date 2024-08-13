@@ -6,11 +6,8 @@ import 'dashboard_almacen.dart';
 import 'login.dart';
 import 'editar_perfil.dart';
 import 'inventario_componentes.dart';
-import 'inventario_lamparas.dart';
 import 'compras.dart';
 import 'merma.dart';
-// import 'merma_componentes_usuario.dart';
-// import 'merma_lamparas_usuario.dart';
 import 'package:farolitomovil/services/api_service_user.dart';
 import 'package:farolitomovil/models/userdetaildto.dart';
 
@@ -43,9 +40,18 @@ class _PrincipalPageState extends State<PrincipalPage> {
   Future<void> _loadUserDetails() async {
     final apiService = ApiService();
     final userDetail = await apiService.getUserDetails();
-    setState(() {
-      _userDetail = userDetail;
-    });
+
+    if (userDetail == null) {
+      // Si el usuario no está autenticado, redirigir a la página de login
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginPage()),
+        (Route<dynamic> route) => false,
+      );
+    } else {
+      setState(() {
+        _userDetail = userDetail;
+      });
+    }
   }
 
   BottomNavigationBarItem _buildBottomNavigationBarItem(

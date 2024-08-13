@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:farolitomovil/models/models_inventario_lampara.dart';
+import 'package:farolitomovil/services/api_service_merma_lamparas.dart';
 
 class InventarioLamparas extends StatefulWidget {
   @override
@@ -12,6 +13,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
   List<RecetaConDetallesDTO> lamparas = [];
   List<RecetaConDetallesDTO> filteredLamparas = [];
   TextEditingController searchController = TextEditingController();
+  ApiService apiService = ApiService();
 
   @override
   void initState() {
@@ -57,6 +59,8 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
     showDialog(
       context: context,
       builder: (context) {
+        TextEditingController cantidadController = TextEditingController();
+        TextEditingController descripcionController = TextEditingController();
         return AlertDialog(
           title: Text(filteredLamparas[index].nombrelampara),
           content: SingleChildScrollView(
@@ -87,8 +91,6 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                     return await showDialog(
                       context: context,
                       builder: (context) {
-                        TextEditingController cantidadController =
-                            TextEditingController();
                         return AlertDialog(
                           title: Text('Mandar a Merma'),
                           content: Column(
@@ -102,6 +104,12 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                                 decoration: InputDecoration(
                                     labelText: 'Cantidad a mandar a merma'),
                               ),
+                              TextField(
+                                controller: descripcionController,
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                    labelText: 'Descripción del problema'),
+                              ),
                             ],
                           ),
                           actions: [
@@ -112,8 +120,13 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                               child: Text('Cancelar'),
                             ),
                             TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(true);
+                              onPressed: () async {
+                                bool success = await apiService.mandarAMerma(
+                                  int.parse(cantidadController.text),
+                                  descripcionController.text,
+                                  detalle.id,
+                                );
+                                Navigator.of(context).pop(success);
                               },
                               child: Text('Aceptar'),
                             ),
