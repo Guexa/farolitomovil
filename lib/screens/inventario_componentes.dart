@@ -123,11 +123,36 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
                             ),
                             TextButton(
                               onPressed: () async {
+                                int cantidadMerma =
+                                    int.tryParse(cantidadController.text) ?? 0;
+
+                                if (cantidadMerma < 1) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'La cantidad a mandar a merma debe ser mayor que 0.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (detalle.cantidad == null ||
+                                    cantidadMerma > detalle.cantidad!) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'La cantidad a mandar a merma no puede ser mayor a la disponible (${detalle.cantidad ?? 0}).'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
                                 bool success = await mandarAMerma(
                                   cantidadController.text,
                                   descripcionController.text,
                                   detalle.id,
                                 );
+
                                 Navigator.of(context).pop(success);
                               },
                               child: Text('Aceptar'),

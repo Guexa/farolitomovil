@@ -121,11 +121,27 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                             ),
                             TextButton(
                               onPressed: () async {
+                                // Validar la cantidad
+                                int cantidad =
+                                    int.tryParse(cantidadController.text) ?? 0;
+                                if (cantidad <= 0) {
+                                  _showErrorDialog(
+                                      'La cantidad debe ser mayor a 0.');
+                                  return;
+                                }
+                                if (cantidad > detalle.cantidad) {
+                                  _showErrorDialog(
+                                      'La cantidad a mandar a merma no puede ser mayor a la disponible (${detalle.cantidad}).');
+                                  return;
+                                }
+
+                                // Realizar el envío
                                 bool success = await apiService.mandarAMerma(
-                                  int.parse(cantidadController.text),
+                                  cantidad,
                                   descripcionController.text,
                                   detalle.id,
                                 );
+
                                 Navigator.of(context).pop(success);
                               },
                               child: Text('Aceptar'),
@@ -151,6 +167,26 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                 Navigator.pop(context);
               },
               child: Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Aceptar'),
             ),
           ],
         );
