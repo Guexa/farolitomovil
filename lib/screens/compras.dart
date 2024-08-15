@@ -14,8 +14,8 @@ class Compras extends StatefulWidget {
 }
 
 class _ComprasState extends State<Compras> {
-  List<CompraDTO> compras = [];
-  List<CompraDTO> filteredCompras = [];
+  List<Compraview> compras = [];
+  List<Compraview> filteredCompras = [];
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -32,7 +32,8 @@ class _ComprasState extends State<Compras> {
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
       setState(() {
-        compras = jsonResponse.map((data) => CompraDTO.fromJson(data)).toList();
+        compras =
+            jsonResponse.map((data) => Compraview.fromJson(data)).toList();
         filteredCompras = compras;
       });
     } else {
@@ -93,7 +94,12 @@ class _ComprasState extends State<Compras> {
   }
 
   void _addCompra() {
-    widget.onSelectPage(NuevaCompraPage(onBack: _handleBackToCompras));
+    final userToken =
+        'your_user_token_here'; // Reemplaza esto con la forma correcta de obtener el token
+    widget.onSelectPage(NuevaCompraPage(
+      onBack: _handleBackToCompras,
+      userToken: userToken, // Asegúrate de pasar el token aquí
+    ));
   }
 
   @override

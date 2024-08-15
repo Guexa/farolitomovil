@@ -1,29 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:farolitomovil/services/api_service_compra_nueva.dart';
 import 'package:farolitomovil/models/models_compra_nueva.dart';
+import 'package:farolitomovil/models/models_compra_dto.dart';
 
 class NuevaCompraPage extends StatefulWidget {
   final VoidCallback onBack;
+  final String userToken;
 
-  NuevaCompraPage({Key? key, required this.onBack}) : super(key: key);
+  NuevaCompraPage({Key? key, required this.onBack, required this.userToken})
+      : super(key: key);
 
   @override
   _NuevaCompraPageState createState() => _NuevaCompraPageState();
 }
 
 class _NuevaCompraPageState extends State<NuevaCompraPage> {
-  final ApiService _apiService = ApiService(baseUrl: 'https://localhost:5000');
+  late ApiService _apiService;
   late Future<List<Proveedor>> _proveedores;
   late Future<List<Componente>> _componentes;
   Proveedor? _selectedProveedor;
   Componente? _selectedComponente;
   final _cantidadController = TextEditingController();
   final _costoController = TextEditingController();
-  final List<DetalleCompra> _detalles = [];
+  final List<DetalleCompraDTO> _detalles = [];
+
+  bool _proveedorSeleccionado = false;
 
   @override
   void initState() {
     super.initState();
+    _apiService = ApiService(baseUrl: 'https://localhost:5000');
     _proveedores = _apiService.obtenerProveedores();
     _componentes = _apiService.obtenerComponentes();
   }
@@ -32,19 +38,37 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
     if (_selectedProveedor != null && _selectedComponente != null) {
       final cantidad = int.tryParse(_cantidadController.text) ?? 0;
       final costo = double.tryParse(_costoController.text) ?? 0.0;
-      final detalle = DetalleCompra(
-        proveedor: _selectedProveedor!.nombreEmpresa,
-        componente: _selectedComponente!.nombre,
-        cantidad: cantidad,
-        costo: costo,
+
+      if (cantidad > 0 && costo > 0) {
+        print("Agregando detalle...");
+
+        final detalle = DetalleCompraDTO(
+          componentesId: _selectedComponente!.id,
+          cantidad: cantidad,
+          costo: costo,
+          proveedorId: _selectedProveedor!.id,
+        );
+
+        setState(() {
+          _detalles.add(detalle);
+          _cantidadController.clear();
+          _costoController.clear();
+          _selectedComponente = null;
+          _proveedorSeleccionado = true;
+        });
+        print("Detalle agregado: ${detalle.toJson()}");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('La cantidad y el costo deben ser mayores que cero.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Debe seleccionar un proveedor y un componente.')),
       );
-      setState(() {
-        _detalles.add(detalle);
-        _cantidadController.clear();
-        _costoController.clear();
-        _selectedProveedor = null;
-        _selectedComponente = null;
-      });
     }
   }
 
@@ -54,46 +78,72 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
     });
   }
 
-  void _registrarCompra() {
-    // Lógica para registrar la compra
+  Future<void> _confirmarCompra() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirmar Compra'),
+        content: Text('¿Estás seguro de que deseas registrar esta compra?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      _registrarCompra();
+    }
   }
 
-  Widget _buildDropdown<T>({
-    required Future<List<T>> future,
-    required String labelText,
-    required T? selectedValue,
-    required void Function(T?)? onChanged,
-    required String Function(T) itemLabel,
-  }) {
-    return FutureBuilder<List<T>>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Text('Error al cargar $labelText');
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Text('No hay datos disponibles');
-        } else {
-          return DropdownButtonFormField<T>(
-            decoration: InputDecoration(
-              labelText: labelText,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-            ),
-            items: snapshot.data!
-                .map((item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(itemLabel(item)),
-                    ))
-                .toList(),
-            onChanged: onChanged,
-            value: selectedValue,
-          );
-        }
-      },
+  void _registrarCompra() async {
+    if (_detalles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Debe agregar al menos un detalle de compra.')),
+      );
+      return;
+    }
+
+    if (_selectedProveedor == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Seleccione un proveedor.')),
+      );
+      return;
+    }
+
+    print("Preparando datos para registrar la compra...");
+
+    final compraDTO = AgregarCompraDTO(
+      fecha: DateTime.now().toIso8601String().substring(0, 10),
+      proveedorId: _selectedProveedor!.id,
+      detalles: _detalles,
     );
+
+    print("Datos de la compra: ${compraDTO.toJson()}");
+
+    try {
+      final responseMessage = await _apiService.agregarCompra(compraDTO);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(responseMessage)),
+      );
+
+      if (responseMessage.contains('exitosamente')) {
+        setState(() {
+          _detalles.clear();
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al registrar la compra: $e')),
+      );
+    }
   }
 
   @override
@@ -120,11 +170,15 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 future: _proveedores,
                 labelText: 'Proveedor',
                 selectedValue: _selectedProveedor,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedProveedor = value;
-                  });
-                },
+                onChanged: _proveedorSeleccionado
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _selectedProveedor = value;
+                          print(
+                              "Proveedor seleccionado: ${_selectedProveedor?.nombreEmpresa}");
+                        });
+                      },
                 itemLabel: (item) => item.nombreEmpresa,
               ),
               SizedBox(height: 10),
@@ -135,6 +189,8 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 onChanged: (value) {
                   setState(() {
                     _selectedComponente = value;
+                    print(
+                        "Componente seleccionado: ${_selectedComponente?.nombre}");
                   });
                 },
                 itemLabel: (item) => item.nombre,
@@ -152,15 +208,20 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 icon: Icons.attach_money,
                 id: 'costoTextField',
               ),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _agregarDetalle,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF012869),
-                  padding: EdgeInsets.symmetric(horizontal: 50),
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: TextStyle(color: Colors.white),
                 ),
-                child: Text('Agregar Detalle'),
+                child: Text(
+                  'Agregar Detalle',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               Text(
                 'Detalles de la compra:',
                 style: TextStyle(
@@ -174,10 +235,11 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 itemCount: _detalles.length,
                 itemBuilder: (context, index) {
                   final detalle = _detalles[index];
+
                   return ListTile(
-                    title: Text(detalle.componente),
+                    title: Text('ID Componente: ${detalle.componentesId}'),
                     subtitle: Text(
-                        'Cantidad: ${detalle.cantidad}, Costo: \$${detalle.costo}'),
+                        'Cantidad: ${detalle.cantidad}, Costo: \$${detalle.costo}, Proveedor ID: ${detalle.proveedorId}'),
                     trailing: IconButton(
                       icon: Icon(Icons.delete),
                       onPressed: () => _eliminarDetalle(index),
@@ -185,19 +247,60 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                   );
                 },
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _registrarCompra,
+                onPressed: _confirmarCompra,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFC99838),
-                  padding: EdgeInsets.symmetric(horizontal: 50),
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: TextStyle(color: Colors.white),
                 ),
-                child: Text('Registrar Compra'),
+                child: Text(
+                  'Registrar Compra',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdown<T>({
+    required Future<List<T>> future,
+    required String labelText,
+    required T? selectedValue,
+    required void Function(T?)? onChanged,
+    required String Function(T) itemLabel,
+  }) {
+    return FutureBuilder<List<T>>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No hay datos disponibles');
+        } else {
+          final items = snapshot.data!;
+          return DropdownButtonFormField<T>(
+            value: selectedValue,
+            onChanged: onChanged,
+            items: items.map((item) {
+              return DropdownMenuItem<T>(
+                value: item,
+                child: Text(itemLabel(item)),
+              );
+            }).toList(),
+            decoration: InputDecoration(
+              labelText: labelText,
+              border: OutlineInputBorder(),
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -207,313 +310,14 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
     required IconData icon,
     required String id,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
+      keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        border: OutlineInputBorder(),
       ),
-      keyboardType: id == 'cantidadTextField'
-          ? TextInputType.number
-          : TextInputType.numberWithOptions(decimal: true),
     );
   }
-
-  @override
-  void dispose() {
-    widget.onBack(); // Llamada a la función onBack cuando se cierra la página
-    super.dispose();
-  }
 }
-
-class DetalleCompra {
-  final String proveedor;
-  final String componente;
-  final int cantidad;
-  final double costo;
-
-  DetalleCompra({
-    required this.proveedor,
-    required this.componente,
-    required this.cantidad,
-    required this.costo,
-  });
-}
-
-
-// import 'package:flutter/material.dart';
-// import 'package:farolitomovil/services/api_service_compra_nueva.dart';
-// import 'package:farolitomovil/models/models_compra_nueva.dart';
-
-// class NuevaCompraPage extends StatefulWidget {
-//   final VoidCallback onBack;
-
-//   NuevaCompraPage({Key? key, required this.onBack}) : super(key: key);
-
-//   @override
-//   _NuevaCompraPageState createState() => _NuevaCompraPageState();
-// }
-
-// class _NuevaCompraPageState extends State<NuevaCompraPage> {
-//   final TextEditingController _cantidadController = TextEditingController();
-//   final TextEditingController _costoController = TextEditingController();
-//   final List<DetalleCompra> _detalles = [];
-
-//   late Future<List<Proveedor>> _proveedores;
-//   late Future<List<Componente>> _componentes;
-//   Proveedor? _selectedProveedor;
-//   Componente? _selectedComponente;
-
-//   final ApiService _apiService = ApiService(baseUrl: 'https://localhost:5000');
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _proveedores = _apiService.obtenerProveedores();
-//     _componentes = _apiService.obtenerComponentes();
-//   }
-
-//   void _agregarDetalle() {
-//     if (_selectedComponente != null) {
-//       setState(() {
-//         _detalles.add(
-//           DetalleCompra(
-//             componente: _selectedComponente!.nombre,
-//             cantidad: int.tryParse(_cantidadController.text) ?? 0,
-//             costo: double.tryParse(_costoController.text) ?? 0.0,
-//           ),
-//         );
-//         _cantidadController.clear();
-//         _costoController.clear();
-//       });
-//     }
-//   }
-
-//   void _eliminarDetalle(int index) {
-//     setState(() {
-//       _detalles.removeAt(index);
-//     });
-//   }
-
-//   Future<void> _registrarCompra() async {
-//     if (_selectedProveedor == null || _detalles.isEmpty) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//             content:
-//                 Text('Seleccione un proveedor y agregue al menos un detalle')),
-//       );
-//       return;
-//     }
-
-//     try {
-//       final componentes = await _componentes;
-
-//       final detallesDTO = _detalles.map((detalle) {
-//         final componente = componentes.firstWhere(
-//           (c) => c.nombre == detalle.componente,
-//           orElse: () =>
-//               Componente(id: '-1', nombre: 'Desconocido'), // Componente dummy
-//         );
-//         return DetalleCompraDTO(
-//           componentesId: componente.id,
-//           cantidad: detalle.cantidad,
-//           costo: detalle.costo,
-//         );
-//       }).toList();
-
-//       final compraDTO = AgregarCompraDTO(
-//         proveedorId: _selectedProveedor!.id,
-//         detalles: detallesDTO,
-//       );
-
-//       await _apiService.agregarCompra(compraDTO);
-
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Compra registrada exitosamente')),
-//       );
-//       setState(() {
-//         _detalles.clear();
-//       });
-//     } catch (e) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(content: Text('Error al registrar la compra: $e')),
-//       );
-//     }
-//   }
-
-//   Widget _buildTextField({
-//     required TextEditingController controller,
-//     required String labelText,
-//     required IconData icon,
-//     required String id,
-//   }) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(vertical: 10.0),
-//       child: TextFormField(
-//         controller: controller,
-//         decoration: InputDecoration(
-//           labelText: labelText,
-//           prefixIcon: Icon(icon),
-//           helperText: 'Ingrese su $labelText',
-//           errorText: controller.text.isEmpty
-//               ? 'Ingrese información a este campo'
-//               : null,
-//           border: OutlineInputBorder(
-//             borderRadius: BorderRadius.circular(8.0),
-//           ),
-//         ),
-//         key: Key(id),
-//       ),
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         centerTitle: true,
-//         backgroundColor: const Color(0xFFC99838),
-//         title: const Text(
-//           'Nueva compra',
-//           style: TextStyle(
-//             color: Colors.white,
-//             fontWeight: FontWeight.bold,
-//           ),
-//         ),
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: SingleChildScrollView(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               FutureBuilder<List<Proveedor>>(
-//                 future: _proveedores,
-//                 builder: (context, snapshot) {
-//                   if (snapshot.connectionState == ConnectionState.waiting) {
-//                     return Center(child: CircularProgressIndicator());
-//                   } else if (snapshot.hasError) {
-//                     return Text('Error al cargar proveedores');
-//                   } else {
-//                     return DropdownButtonFormField<Proveedor>(
-//                       decoration: InputDecoration(
-//                         labelText: 'Proveedor',
-//                         prefixIcon: Icon(Icons.business),
-//                         border: OutlineInputBorder(
-//                           borderRadius: BorderRadius.circular(8.0),
-//                         ),
-//                       ),
-//                       items: snapshot.data!
-//                           .map((proveedor) => DropdownMenuItem(
-//                                 value: proveedor,
-//                                 child: Text(proveedor.nombre),
-//                               ))
-//                           .toList(),
-//                       onChanged: (value) {
-//                         setState(() {
-//                           _selectedProveedor = value;
-//                         });
-//                       },
-//                       value: _selectedProveedor,
-//                     );
-//                   }
-//                 },
-//               ),
-//               SizedBox(height: 10),
-//               FutureBuilder<List<Componente>>(
-//                 future: _componentes,
-//                 builder: (context, snapshot) {
-//                   if (snapshot.connectionState == ConnectionState.waiting) {
-//                     return Center(child: CircularProgressIndicator());
-//                   } else if (snapshot.hasError) {
-//                     return Text('Error al cargar componentes');
-//                   } else {
-//                     return DropdownButtonFormField<Componente>(
-//                       decoration: InputDecoration(
-//                         labelText: 'Componente',
-//                         prefixIcon: Icon(Icons.build),
-//                         border: OutlineInputBorder(
-//                           borderRadius: BorderRadius.circular(8.0),
-//                         ),
-//                       ),
-//                       items: snapshot.data!
-//                           .map((componente) => DropdownMenuItem(
-//                                 value: componente,
-//                                 child: Text(componente.nombre),
-//                               ))
-//                           .toList(),
-//                       onChanged: (value) {
-//                         setState(() {
-//                           _selectedComponente = value;
-//                         });
-//                       },
-//                       value: _selectedComponente,
-//                     );
-//                   }
-//                 },
-//               ),
-//               SizedBox(height: 10),
-//               _buildTextField(
-//                 controller: _cantidadController,
-//                 labelText: 'Cantidad',
-//                 icon: Icons.format_list_numbered,
-//                 id: 'cantidadTextField',
-//               ),
-//               _buildTextField(
-//                 controller: _costoController,
-//                 labelText: 'Costo',
-//                 icon: Icons.attach_money,
-//                 id: 'costoTextField',
-//               ),
-//               ElevatedButton(
-//                 onPressed: _agregarDetalle,
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: const Color(0xFF012869),
-//                   padding: const EdgeInsets.symmetric(horizontal: 50),
-//                 ),
-//                 child: Text('Agregar Detalle'),
-//               ),
-//               SizedBox(height: 10),
-//               Text(
-//                 'Detalles de la compra:',
-//                 style: TextStyle(
-//                   fontSize: 18.0,
-//                   fontWeight: FontWeight.bold,
-//                 ),
-//               ),
-//               ListView.builder(
-//                 shrinkWrap: true,
-//                 physics: NeverScrollableScrollPhysics(),
-//                 itemCount: _detalles.length,
-//                 itemBuilder: (context, index) {
-//                   final detalle = _detalles[index];
-//                   return ListTile(
-//                     title: Text(detalle.componente),
-//                     subtitle: Text(
-//                         'Cantidad: ${detalle.cantidad}, Costo: \$${detalle.costo}'),
-//                     trailing: IconButton(
-//                       icon: Icon(Icons.delete),
-//                       onPressed: () => _eliminarDetalle(index),
-//                     ),
-//                   );
-//                 },
-//               ),
-//               SizedBox(height: 10),
-//               ElevatedButton(
-//                 onPressed: _registrarCompra,
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: const Color(0xFFC99838),
-//                   padding: const EdgeInsets.symmetric(horizontal: 50),
-//                 ),
-//                 child: Text('Registrar Compra'),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

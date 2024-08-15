@@ -1,18 +1,18 @@
-class CompraDTO {
+class Compraview {
   final int id;
   final DateTime fecha;
   final String usuarioNombre;
   final List<DetalleCompraDTO> detalles;
 
-  CompraDTO({
+  Compraview({
     required this.id,
     required this.fecha,
     required this.usuarioNombre,
     required this.detalles,
   });
 
-  factory CompraDTO.fromJson(Map<String, dynamic> json) {
-    return CompraDTO(
+  factory Compraview.fromJson(Map<String, dynamic> json) {
+    return Compraview(
       id: json['id'],
       fecha: DateTime.parse(json['fecha']),
       usuarioNombre: json['usuarioNombre'],
