@@ -25,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  //console.log("aqui inicia ");
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
