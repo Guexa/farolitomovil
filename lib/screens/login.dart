@@ -25,7 +25,6 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  //console.log("aqui inicia ");
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -42,7 +41,6 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     if (authResponse != null && authResponse.isSuccess) {
-      // Save token and navigate to the next page
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', authResponse.token);
 
@@ -63,107 +61,88 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: Container(
-          width: 280,
-          padding: const EdgeInsets.all(30),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.062),
-                blurRadius: 40,
-                offset: const Offset(0, 0),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                height: 50,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Farolito',
-                style: TextStyle(
-                  fontSize: 2.5 * 16,
-                  color: Color(0xFF2e2e2e),
-                  fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          // Agregamos el SingleChildScrollView aquí
+          child: Container(
+            width: 280,
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.062),
+                  blurRadius: 40,
+                  offset: const Offset(0, 0),
                 ),
-              ),
-              const SizedBox(height: 30),
-              _buildInputField(
-                controller: _usernameController,
-                hint: 'Usuario',
-                icon: Icons.person,
-                isPassword: false,
-              ),
-              const SizedBox(height: 20),
-              _buildInputField(
-                controller: _passwordController,
-                hint: 'Contraseña',
-                icon: Icons.lock,
-                isPassword: true,
-              ),
-              const SizedBox(height: 10),
-              // Align(
-              //   alignment: Alignment.centerRight,
-              //   child: GestureDetector(
-              //     onTap: () {
-              //       Navigator.push(
-              //         context,
-              //         MaterialPageRoute(
-              //           builder: (context) => const ContraseniaPage(),
-              //         ),
-              //       );
-              //     },
-              //     child: const Text(
-              //       '¿Olvidaste la contraseña?',
-              //       style: TextStyle(
-              //         color: Colors.blue,
-              //         fontSize: 12,
-              //         fontWeight: FontWeight.w500,
-              //         decoration: TextDecoration.underline,
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2e2e2e),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  height: 50,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Farolito',
+                  style: TextStyle(
+                    fontSize: 2.5 * 16,
+                    color: Color(0xFF2e2e2e),
+                    fontWeight: FontWeight.bold,
                   ),
-                  padding: const EdgeInsets.all(0),
                 ),
-                child: Container(
-                  alignment: Alignment.center,
-                  height: 40,
-                  child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Ingresar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                const SizedBox(height: 30),
+                _buildInputField(
+                  controller: _usernameController,
+                  hint: 'Usuario',
+                  icon: Icons.person,
+                  isPassword: false,
+                ),
+                const SizedBox(height: 20),
+                _buildInputField(
+                  controller: _passwordController,
+                  hint: 'Contraseña',
+                  icon: Icons.lock,
+                  isPassword: true,
+                ),
+                const SizedBox(height: 10),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2e2e2e),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.all(0),
+                  ),
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 40,
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Ingresar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                ),
-              ),
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: Colors.red),
                   ),
                 ),
-            ],
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Text(
+                      _errorMessage!,
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
