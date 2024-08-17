@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = 'https://localhost:5000/api/Mermas';
+  final String baseUrl = 'http://192.168.175.212:5000/api/Mermas';
 
   Future<bool> mandarAMerma(
       int cantidad, String descripcion, int inventariolamparaId) async {

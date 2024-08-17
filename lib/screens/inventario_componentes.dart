@@ -24,7 +24,7 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
 
   Future<void> fetchComponentes() async {
     final response = await http.get(Uri.parse(
-        'https://localhost:5000/api/Inventario/inventario-componentes'));
+        'http://192.168.175.212:5000/api/Inventario/inventario-componentes'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -59,6 +59,9 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
     showDialog(
       context: context,
       builder: (context) {
+        TextEditingController cantidadController = TextEditingController();
+        TextEditingController descripcionController = TextEditingController();
+
         return AlertDialog(
           title: Text(filteredComponentes[index].nombre),
           content: SingleChildScrollView(
@@ -86,13 +89,9 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
                   ),
                   direction: DismissDirection.endToStart,
                   confirmDismiss: (direction) async {
-                    return await showDialog(
+                    bool formFilled = await showDialog(
                       context: context,
                       builder: (context) {
-                        TextEditingController cantidadController =
-                            TextEditingController();
-                        TextEditingController descripcionController =
-                            TextEditingController();
                         return AlertDialog(
                           title: Text('Mandar a Merma'),
                           content: Column(
@@ -122,38 +121,21 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
                               child: Text('Cancelar'),
                             ),
                             TextButton(
-                              onPressed: () async {
-                                int cantidadMerma =
+                              onPressed: () {
+                                int cantidad =
                                     int.tryParse(cantidadController.text) ?? 0;
-
-                                if (cantidadMerma < 1) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'La cantidad a mandar a merma debe ser mayor que 0.'),
-                                    ),
-                                  );
+                                if (cantidad <= 0) {
+                                  _showErrorDialog(
+                                      'La cantidad debe ser mayor a 0.');
+                                  return;
+                                }
+                                if (cantidad > detalle.cantidad!) {
+                                  _showErrorDialog(
+                                      'La cantidad a mandar a merma no puede ser mayor a la disponible (${detalle.cantidad}).');
                                   return;
                                 }
 
-                                if (detalle.cantidad == null ||
-                                    cantidadMerma > detalle.cantidad!) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'La cantidad a mandar a merma no puede ser mayor a la disponible (${detalle.cantidad ?? 0}).'),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                bool success = await mandarAMerma(
-                                  cantidadController.text,
-                                  descripcionController.text,
-                                  detalle.id,
-                                );
-
-                                Navigator.of(context).pop(success);
+                                Navigator.of(context).pop(true);
                               },
                               child: Text('Aceptar'),
                             ),
@@ -161,6 +143,39 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
                         );
                       },
                     );
+
+                    if (formFilled) {
+                      return await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text('Confirmar acción'),
+                            content: Text(
+                                '¿Seguro que quieres mandar a merma ${cantidadController.text} unidades de ${detalle.proveedorNombre}?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  bool success = await mandarAMerma(
+                                    cantidadController.text,
+                                    descripcionController.text,
+                                    detalle.id,
+                                  );
+                                  Navigator.of(context).pop(success);
+                                },
+                                child: Text('Aceptar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                    return false;
                   },
                   child: ListTile(
                     leading: Icon(Icons.drag_handle),
@@ -195,6 +210,26 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
 
     ApiServiceMerma apiServiceMerma = ApiServiceMerma();
     return await apiServiceMerma.mandarAMerma(merma);
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -237,7 +272,12 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
                       child: ListTile(
                         title: Text('${filteredComponentes[index].nombre}'),
                         leading: CircleAvatar(
-                          child: Text('${filteredComponentes[index].id}'),
+                          backgroundColor: Colors.black, // Fondo negro
+                          child: Text(
+                            '${filteredComponentes[index].id}',
+                            style:
+                                TextStyle(color: Colors.white), // Texto blanco
+                          ),
                         ),
                         trailing: Wrap(
                           spacing: 5,
@@ -248,6 +288,8 @@ class _InventarioComponentesState extends State<InventarioComponentes> {
                               },
                               icon: Icon(Icons.info),
                               splashRadius: 20,
+                              color: const Color(
+                                  0xFFC99838), // Icono color 0xFFC99838
                             ),
                           ],
                         ),

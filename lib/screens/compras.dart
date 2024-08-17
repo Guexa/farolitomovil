@@ -27,7 +27,7 @@ class _ComprasState extends State<Compras> {
 
   Future<void> fetchCompras() async {
     final response =
-        await http.get(Uri.parse('https://localhost:5000/api/Compra/compras'));
+        await http.get(Uri.parse('http://localhost:5000/api/Compra/compras'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -62,7 +62,7 @@ class _ComprasState extends State<Compras> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Compra #${filteredCompras[index].id}'),
+          title: Text('Compra #${index + 1}'), // Mostrar número generado
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -89,7 +89,6 @@ class _ComprasState extends State<Compras> {
   }
 
   void _handleBackToCompras() {
-    // Regresa a la página de compras
     widget.onSelectPage(Compras(onSelectPage: widget.onSelectPage));
   }
 
@@ -125,8 +124,10 @@ class _ComprasState extends State<Compras> {
               controller: searchController,
               decoration: InputDecoration(
                 labelText: 'Buscar',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
               ),
             ),
           ),
@@ -138,14 +139,32 @@ class _ComprasState extends State<Compras> {
                   onLongPress: () => _showDetails(index),
                   onDoubleTap: () => _showDetails(index),
                   child: Card(
+                    color: Colors.grey[200],
                     child: ListTile(
-                      title: Text('Compra #${filteredCompras[index].id}'),
+                      title: Text(
+                        'Compra #${index + 1}', // Mostrar número generado
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
                       leading: CircleAvatar(
-                        child: Text('${filteredCompras[index].id}'),
+                        backgroundColor: Colors.grey,
+                        child: Text(
+                          '${index + 1}', // Mostrar número generado
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       subtitle: Text(
-                          'Usuario: ${filteredCompras[index].usuarioNombre}'),
-                      trailing: Icon(Icons.info),
+                        'Usuario: ${filteredCompras[index].usuarioNombre}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      trailing: Icon(
+                        Icons.info,
+                        color: Colors.grey[800],
+                      ),
                     ),
                   ),
                 );

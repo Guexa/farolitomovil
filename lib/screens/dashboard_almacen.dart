@@ -28,7 +28,7 @@ class _DashboardAlmacenState extends State<DashboardAlmacen> {
 
   Future<void> _fetchComponentes() async {
     final response = await http.get(Uri.parse(
-        'https://localhost:5000/api/Dashboard/ExistenciasComponentes'));
+        'http://192.168.175.212:5000/api/Dashboard/ExistenciasComponentes'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -40,8 +40,8 @@ class _DashboardAlmacenState extends State<DashboardAlmacen> {
   }
 
   Future<void> _fetchLamparas() async {
-    final response = await http.get(
-        Uri.parse('https://localhost:5000/api/Dashboard/ExistenciasLampara'));
+    final response = await http.get(Uri.parse(
+        'http://192.168.175.212:5000/api/Dashboard/ExistenciasLampara'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -177,31 +177,55 @@ class _DashboardAlmacenState extends State<DashboardAlmacen> {
   }
 
   Widget _buildComponenteTable() {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      margin: EdgeInsets.symmetric(vertical: 20),
-      child: SfDataGrid(
-        source: ComponentesDataSource(_componentes),
-        columns: <GridColumn>[
-          GridColumn(columnName: 'id', label: Text('ID')),
-          GridColumn(columnName: 'componente', label: Text('Componente')),
-          GridColumn(columnName: 'existencia', label: Text('Existencia')),
-        ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        margin: EdgeInsets.symmetric(vertical: 20),
+        child: SfDataGrid(
+          source: ComponentesDataSource(_componentes),
+          columns: <GridColumn>[
+            _buildGridColumn('id', 'ID'),
+            _buildGridColumn('componente', 'Componente'),
+            _buildGridColumn('existencia', 'Existencia'),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildLamparaTable() {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      margin: EdgeInsets.symmetric(vertical: 20),
-      child: SfDataGrid(
-        source: LamparasDataSource(_lamparas),
-        columns: <GridColumn>[
-          GridColumn(columnName: 'id', label: Text('ID')),
-          GridColumn(columnName: 'productoTerminado', label: Text('Lámpara')),
-          GridColumn(columnName: 'existencia', label: Text('Existencia')),
-        ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        margin: EdgeInsets.symmetric(vertical: 20),
+        child: SfDataGrid(
+          source: LamparasDataSource(_lamparas),
+          columns: <GridColumn>[
+            _buildGridColumn('id', 'ID'),
+            _buildGridColumn('productoTerminado', 'Lámpara'),
+            _buildGridColumn('existencia', 'Existencia'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  GridColumn _buildGridColumn(String columnName, String label) {
+    return GridColumn(
+      columnName: columnName,
+      label: Container(
+        padding: EdgeInsets.all(8.0),
+        alignment: Alignment.center,
+        color: Colors.black,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
@@ -227,23 +251,21 @@ class ComponentesDataSource extends DataGridSource {
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
-    return DataGridRowAdapter(cells: [
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[0].value.toString()),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[1].value.toString()),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[2].value.toString()),
-      ),
-    ]);
+    return DataGridRowAdapter(
+      cells: row.getCells().map<Widget>((dataGridCell) {
+        return Container(
+          padding: EdgeInsets.all(8.0),
+          alignment: Alignment.center,
+          color: Colors.grey[200],
+          child: Text(
+            dataGridCell.value.toString(),
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 }
 
@@ -268,22 +290,20 @@ class LamparasDataSource extends DataGridSource {
 
   @override
   DataGridRowAdapter buildRow(DataGridRow row) {
-    return DataGridRowAdapter(cells: [
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[0].value.toString()),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[1].value.toString()),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[2].value.toString()),
-      ),
-    ]);
+    return DataGridRowAdapter(
+      cells: row.getCells().map<Widget>((dataGridCell) {
+        return Container(
+          padding: EdgeInsets.all(8.0),
+          alignment: Alignment.center,
+          color: Colors.grey[200],
+          child: Text(
+            dataGridCell.value.toString(),
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 }

@@ -55,19 +55,6 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
     });
   }
 
-  // Future<void> _pickImage() async {
-  //   final ImagePicker _picker = ImagePicker();
-  //   final XFile? pickedImage =
-  //       await _picker.pickImage(source: ImageSource.gallery);
-
-  //   if (pickedImage != null) {
-  //     setState(() {
-  //       _image = File(pickedImage.path);
-  //       _onChanged();
-  //     });
-  //   }
-  // }
-
   Future<void> _onSave() async {
     if (_formKey.currentState?.validate() ?? false) {
       final apiService = ApiServiceUpdateUser();
@@ -82,15 +69,6 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
       final success = await apiService.updateUserDetails(updateUserDto);
 
       if (success) {
-        // if (_image != null) {
-        //   final imageUploadSuccess = await apiService.uploadUserImage(_image!);
-        //   if (!imageUploadSuccess) {
-        //     ScaffoldMessenger.of(context).showSnackBar(
-        //       const SnackBar(content: Text('Error al subir la imagen')),
-        //     );
-        //   }
-        // }
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Información guardada correctamente')),
         );
@@ -174,26 +152,7 @@ class _EditarPerfilPageState extends State<EditarPerfilPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Stack(
-                      // children: [
-                      //   CircleAvatar(
-                      //     radius: 50,
-                      //     backgroundImage: _image == null
-                      //         ? NetworkImage(
-                      //             'https://via.placeholder.com/150') // Imagen de placeholder
-                      //         : FileImage(_image!) as ImageProvider,
-                      //   ),
-                      //   Positioned(
-                      //     bottom: 0,
-                      //     right: 0,
-                      //     child: IconButton(
-                      //       icon:
-                      //           const Icon(Icons.camera_alt, color: Colors.white),
-                      //       onPressed: _pickImage,
-                      //     ),
-                      //   ),
-                      // ],
-                      ),
+                  Stack(),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _emailController,

@@ -23,13 +23,16 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
   final _cantidadController = TextEditingController();
   final _costoController = TextEditingController();
   final List<DetalleCompraDTO> _detalles = [];
+  final List<String> _nombresComponentes =
+      []; // Lista para almacenar los nombres de los componentes
 
   bool _proveedorSeleccionado = false;
+  double _costoTotal = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _apiService = ApiService(baseUrl: 'https://localhost:5000');
+    _apiService = ApiService(baseUrl: 'http://192.168.175.212:5000');
     _proveedores = _apiService.obtenerProveedores();
     _componentes = _apiService.obtenerComponentes();
   }
@@ -40,23 +43,38 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
       final costo = double.tryParse(_costoController.text) ?? 0.0;
 
       if (cantidad > 0 && costo > 0) {
-        print("Agregando detalle...");
+        // Validación para actualizar cantidad si el componente ya está en el carrito
+        final existingDetailIndex = _detalles.indexWhere((detalle) =>
+            detalle.componentesId == _selectedComponente!.id &&
+            detalle.proveedorId == _selectedProveedor!.id);
 
-        final detalle = DetalleCompraDTO(
-          componentesId: _selectedComponente!.id,
-          cantidad: cantidad,
-          costo: costo,
-          proveedorId: _selectedProveedor!.id,
-        );
+        if (existingDetailIndex != -1) {
+          setState(() {
+            _detalles[existingDetailIndex].cantidad += cantidad;
+            _detalles[existingDetailIndex].costo +=
+                costo * cantidad; // Ajuste en la suma
+            _costoTotal += costo * cantidad; // Ajuste en la suma del total
+          });
+        } else {
+          final detalle = DetalleCompraDTO(
+            componentesId: _selectedComponente!.id,
+            cantidad: cantidad,
+            costo: costo * cantidad, // Ajuste en el cálculo
+            proveedorId: _selectedProveedor!.id,
+          );
 
-        setState(() {
-          _detalles.add(detalle);
-          _cantidadController.clear();
-          _costoController.clear();
-          _selectedComponente = null;
-          _proveedorSeleccionado = true;
-        });
-        print("Detalle agregado: ${detalle.toJson()}");
+          setState(() {
+            _detalles.add(detalle);
+            _nombresComponentes.add(_selectedComponente!
+                .nombre); // Almacenar el nombre del componente
+            _costoTotal += costo * cantidad; // Ajuste en la suma del total
+          });
+        }
+
+        _cantidadController.clear();
+        _costoController.clear();
+        _selectedComponente = null;
+        _proveedorSeleccionado = true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -74,7 +92,13 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
 
   void _eliminarDetalle(int index) {
     setState(() {
+      _costoTotal -= _detalles[index].costo;
       _detalles.removeAt(index);
+      _nombresComponentes
+          .removeAt(index); // También eliminar el nombre del componente
+      if (_detalles.isEmpty) {
+        _proveedorSeleccionado = false;
+      }
     });
   }
 
@@ -117,15 +141,11 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
       return;
     }
 
-    print("Preparando datos para registrar la compra...");
-
     final compraDTO = AgregarCompraDTO(
       fecha: DateTime.now().toIso8601String().substring(0, 10),
       proveedorId: _selectedProveedor!.id,
       detalles: _detalles,
     );
-
-    print("Datos de la compra: ${compraDTO.toJson()}");
 
     try {
       final responseMessage = await _apiService.agregarCompra(compraDTO);
@@ -137,6 +157,9 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
       if (responseMessage.contains('exitosamente')) {
         setState(() {
           _detalles.clear();
+          _nombresComponentes.clear(); // Limpiar la lista de nombres
+          _costoTotal = 0.0;
+          _proveedorSeleccionado = false;
         });
       }
     } catch (e) {
@@ -175,8 +198,6 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                     : (value) {
                         setState(() {
                           _selectedProveedor = value;
-                          print(
-                              "Proveedor seleccionado: ${_selectedProveedor?.nombreEmpresa}");
                         });
                       },
                 itemLabel: (item) => item.nombreEmpresa,
@@ -189,8 +210,6 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                 onChanged: (value) {
                   setState(() {
                     _selectedComponente = value;
-                    print(
-                        "Componente seleccionado: ${_selectedComponente?.nombre}");
                   });
                 },
                 itemLabel: (item) => item.nombre,
@@ -229,23 +248,34 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _detalles.length,
-                itemBuilder: (context, index) {
-                  final detalle = _detalles[index];
-
-                  return ListTile(
-                    title: Text('ID Componente: ${detalle.componentesId}'),
-                    subtitle: Text(
-                        'Cantidad: ${detalle.cantidad}, Costo: \$${detalle.costo}, Proveedor ID: ${detalle.proveedorId}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () => _eliminarDetalle(index),
-                    ),
-                  );
-                },
+              Container(
+                color: Colors.grey[200], // Fondo gris claro para el contenedor
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: _detalles.length,
+                  itemBuilder: (context, index) {
+                    final detalle = _detalles[index];
+                    return ListTile(
+                      title: Text(
+                          'Componente: ${_nombresComponentes[index]}, Nombre: ${_nombresComponentes[index]}'),
+                      subtitle: Text(
+                          'Cantidad: ${detalle.cantidad}, Costo: \$${detalle.costo}, Proveedor: ${_selectedProveedor?.nombreEmpresa ?? "Desconocido"}'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _eliminarDetalle(index),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Costo Total: \$$_costoTotal',
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               SizedBox(height: 20),
               ElevatedButton(
@@ -271,7 +301,7 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
     required Future<List<T>> future,
     required String labelText,
     required T? selectedValue,
-    required void Function(T?)? onChanged,
+    required ValueChanged<T?>? onChanged,
     required String Function(T) itemLabel,
   }) {
     return FutureBuilder<List<T>>(
@@ -284,20 +314,20 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Text('No hay datos disponibles');
         } else {
-          final items = snapshot.data!;
           return DropdownButtonFormField<T>(
             value: selectedValue,
             onChanged: onChanged,
-            items: items.map((item) {
+            items: snapshot.data!.map<DropdownMenuItem<T>>((T value) {
               return DropdownMenuItem<T>(
-                value: item,
-                child: Text(itemLabel(item)),
+                value: value,
+                child: Text(itemLabel(value)),
               );
             }).toList(),
             decoration: InputDecoration(
               labelText: labelText,
               border: OutlineInputBorder(),
             ),
+            isExpanded: true,
           );
         }
       },
@@ -312,12 +342,14 @@ class _NuevaCompraPageState extends State<NuevaCompraPage> {
   }) {
     return TextFormField(
       controller: controller,
-      keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon),
         border: OutlineInputBorder(),
       ),
+      keyboardType:
+          id == 'costoTextField' ? TextInputType.number : TextInputType.number,
+      key: Key(id),
     );
   }
 }

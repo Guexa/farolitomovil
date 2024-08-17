@@ -23,7 +23,7 @@ class _MermaLamparasUsuarioPageState extends State<MermaLamparasUsuarioPage> {
 
   Future<void> fetchMermas() async {
     final response = await http.get(
-        Uri.parse('https://localhost:5000/api/Mermas/mermasLamparasUsuario'));
+        Uri.parse('http://localhost:5000/api/Mermas/mermasLamparasUsuario'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);

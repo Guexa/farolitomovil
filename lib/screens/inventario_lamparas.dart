@@ -23,8 +23,8 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
   }
 
   Future<void> fetchLamparas() async {
-    final response = await http.get(
-        Uri.parse('https://localhost:5000/api/Inventario/inventario-lamparas'));
+    final response = await http.get(Uri.parse(
+        'http://192.168.175.212:5000/api/Inventario/inventario-lamparas'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -135,14 +135,41 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                                   return;
                                 }
 
-                                // Realizar el envío
-                                bool success = await apiService.mandarAMerma(
-                                  cantidad,
-                                  descripcionController.text,
-                                  detalle.id,
+                                // Mostrar alerta de confirmación
+                                bool confirm = await showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Confirmación'),
+                                      content: Text(
+                                          '¿Estás seguro de que quieres mandar a merma ${cantidad} unidades ?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(false);
+                                          },
+                                          child: Text('Cancelar'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(true);
+                                          },
+                                          child: Text('Aceptar'),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
 
-                                Navigator.of(context).pop(success);
+                                if (confirm) {
+                                  bool success = await apiService.mandarAMerma(
+                                    cantidad,
+                                    descripcionController.text,
+                                    detalle.id,
+                                  );
+
+                                  Navigator.of(context).pop(success);
+                                }
                               },
                               child: Text('Aceptar'),
                             ),
@@ -234,7 +261,12 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                       child: ListTile(
                         title: Text('${filteredLamparas[index].nombrelampara}'),
                         leading: CircleAvatar(
-                          child: Text('${filteredLamparas[index].id}'),
+                          backgroundColor: Colors.black, // Fondo negro
+                          child: Text(
+                            '${filteredLamparas[index].id}',
+                            style:
+                                TextStyle(color: Colors.white), // Texto blanco
+                          ),
                         ),
                         trailing: Wrap(
                           spacing: 5,
@@ -245,6 +277,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                               },
                               icon: Icon(Icons.info),
                               splashRadius: 20,
+                              color: const Color(0xFFC99838), // Color ícono
                             ),
                           ],
                         ),

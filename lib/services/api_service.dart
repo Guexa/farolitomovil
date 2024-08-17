@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:farolitomovil/models/auth_response_dto.dart';
 
 class ApiService {
-  static const String apiUrl = 'https://localhost:5000/api/Usuario/login';
+  static const String apiUrl = 'http://192.168.175.212:5000/api/Usuario/login';
 
   Future<AuthResponseDTO?> login(String email, String password) async {
     final response = await http.post(

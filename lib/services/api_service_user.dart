@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/userdetaildto.dart';
 
 class ApiService {
-  final String baseUrl = 'https://localhost:5000/api/Usuario';
+  final String baseUrl = 'http://192.168.175.212:5000/api/Usuario';
 
   Future<UserDetailDTO?> getUserDetails() async {
     final prefs = await SharedPreferences.getInstance();

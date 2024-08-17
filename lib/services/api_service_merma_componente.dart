@@ -4,7 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models_merma_componente_dto.dart';
 
 class ApiServiceMerma {
-  final String apiUrl = 'https://localhost:5000/api/Mermas/mermaComponente';
+  final String apiUrl =
+      'http://192.168.175.212:5000/api/Mermas/mermaComponente';
 
   Future<bool> mandarAMerma(MermaComponenteDTO merma) async {
     final prefs = await SharedPreferences.getInstance();

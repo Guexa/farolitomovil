@@ -24,7 +24,7 @@ class _MermaComponentesUsuarioPageState
 
   Future<void> fetchComponentes() async {
     final response = await http.get(Uri.parse(
-        'https://localhost:5000/api/Mermas/mermasComponentesUsuario'));
+        'http://192.168.175.212:5000/api/Mermas/mermasComponentesUsuario'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);

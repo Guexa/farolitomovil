@@ -29,10 +29,10 @@ class AgregarCompraDTO {
 }
 
 class DetalleCompraDTO {
-  final int componentesId;
-  final int cantidad;
-  final double costo;
-  final int proveedorId;
+  int componentesId;
+  int cantidad;
+  double costo;
+  int proveedorId;
 
   DetalleCompraDTO(
       {required this.componentesId,

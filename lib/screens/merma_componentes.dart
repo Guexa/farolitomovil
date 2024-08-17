@@ -21,8 +21,8 @@ class _MermaComponentesPageState extends State<MermaComponentesPage> {
   }
 
   Future<void> fetchMermas() async {
-    final response = await http
-        .get(Uri.parse('https://localhost:5000/api/Mermas/mermasComponentes'));
+    final response = await http.get(
+        Uri.parse('http://192.168.175.212:5000/api/Mermas/mermasComponentes'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
@@ -68,7 +68,6 @@ class _MermaComponentesPageState extends State<MermaComponentesPage> {
                   subtitle: Text(
                       'Cantidad: ${filteredMermas[index].cantidad} unidades'),
                 ),
-                // Añadir más detalles si es necesario
               ],
             ),
           ),
@@ -123,12 +122,28 @@ class _MermaComponentesPageState extends State<MermaComponentesPage> {
                     margin:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: ListTile(
-                      title: Text(filteredMermas[index].componente),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.black,
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        filteredMermas[index].componente,
+                        style: TextStyle(color: Colors.grey[800]),
+                      ),
                       subtitle: Text(
                         '${filteredMermas[index].descripcion} - ${filteredMermas[index].cantidad} unidades',
                       ),
                       trailing: IconButton(
-                        icon: Icon(Icons.info),
+                        icon: Icon(
+                          Icons.info,
+                          color: const Color(0xFFC99838),
+                        ),
                         onPressed: () {
                           _showDetails(index);
                         },
