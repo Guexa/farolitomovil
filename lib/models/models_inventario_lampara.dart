@@ -20,7 +20,8 @@ class RecetaConDetallesDTO {
       id: json['id'],
       nombrelampara: json['nombrelampara'],
       existencias: json['existencias'],
-      costo: json['costo'],
+      costo: (json['costo'] as num)
+          .toDouble(), // Asegura que 'costo' sea siempre un 'double'
       urlImage: json['urlImage'],
       detalles: (json['detalles'] as List)
           .map((detalle) => InventarioLamparaDetalleDTO.fromJson(detalle))
@@ -50,7 +51,8 @@ class InventarioLamparaDetalleDTO {
       fechaProduccion: DateTime.parse(json['fechaProduccion']),
       usuario: json['usuario'],
       cantidad: json['cantidad'],
-      precio: json['precio'],
+      precio: (json['precio'] as num)
+          .toDouble(), // Asegura que 'precio' sea siempre un 'double'
     );
   }
 }

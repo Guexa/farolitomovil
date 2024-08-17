@@ -20,22 +20,32 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
     super.initState();
     fetchLamparas();
     searchController.addListener(_filterItems);
+    print("InventarioLamparas State inicializado");
   }
 
   Future<void> fetchLamparas() async {
-    final response = await http.get(Uri.parse(
-        'http://192.168.175.212:5000/api/Inventario/inventario-lamparas'));
+    try {
+      print("Intentando obtener lámparas desde la API...");
+      final response = await http.get(Uri.parse(
+          'http://192.168.175.212:5000/api/Inventario/inventario-lamparas'));
+      print("Respuesta obtenida: ${response.statusCode}");
 
-    if (response.statusCode == 200) {
-      List jsonResponse = json.decode(response.body);
-      setState(() {
-        lamparas = jsonResponse
-            .map((data) => RecetaConDetallesDTO.fromJson(data))
-            .toList();
-        filteredLamparas = lamparas;
-      });
-    } else {
-      throw Exception('Failed to load lamparas');
+      if (response.statusCode == 200) {
+        List jsonResponse = json.decode(response.body);
+        print("Respuesta JSON decodificada correctamente.");
+        setState(() {
+          lamparas = jsonResponse
+              .map((data) => RecetaConDetallesDTO.fromJson(data))
+              .toList();
+          filteredLamparas = lamparas;
+          print("Lámparas cargadas: ${lamparas.length}");
+        });
+      } else {
+        print("Error al cargar las lámparas: ${response.statusCode}");
+        throw Exception('Failed to load lamparas');
+      }
+    } catch (e) {
+      print("Excepción atrapada: $e");
     }
   }
 
@@ -43,6 +53,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
   void dispose() {
     searchController.dispose();
     super.dispose();
+    print("InventarioLamparas State disposed");
   }
 
   void _filterItems() {
@@ -52,6 +63,8 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
               .toLowerCase()
               .contains(searchController.text.toLowerCase()))
           .toList();
+      print(
+          "Filtrado realizado. Elementos encontrados: ${filteredLamparas.length}");
     });
   }
 
@@ -67,6 +80,8 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: filteredLamparas[index].detalles.map((detalle) {
+                print(
+                    "Detalle: ${detalle.usuario}, Cantidad: ${detalle.cantidad}, Precio: ${detalle.precio}");
                 return Dismissible(
                   key: UniqueKey(),
                   background: Container(
@@ -124,6 +139,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                                 // Validar la cantidad
                                 int cantidad =
                                     int.tryParse(cantidadController.text) ?? 0;
+                                print("Cantidad ingresada: $cantidad");
                                 if (cantidad <= 0) {
                                   _showErrorDialog(
                                       'La cantidad debe ser mayor a 0.');
@@ -162,6 +178,8 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                                 );
 
                                 if (confirm) {
+                                  print(
+                                      "Mandando a merma $cantidad unidades con descripción: ${descripcionController.text}");
                                   bool success = await apiService.mandarAMerma(
                                     cantidad,
                                     descripcionController.text,
@@ -169,6 +187,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                                   );
 
                                   Navigator.of(context).pop(success);
+                                  print("Operación de merma exitosa: $success");
                                 }
                               },
                               child: Text('Aceptar'),
@@ -202,6 +221,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
   }
 
   void _showErrorDialog(String message) {
+    print("Error mostrado: $message");
     showDialog(
       context: context,
       builder: (context) {
@@ -292,6 +312,7 @@ class _InventarioLamparasState extends State<InventarioLamparas> {
                     final item = lamparas.removeAt(oldIndex);
                     lamparas.insert(newIndex, item);
                     _filterItems();
+                    print("Reordenamiento realizado: $oldIndex -> $newIndex");
                   });
                 },
               ),

@@ -6,9 +6,7 @@ import 'nueva_compra.dart';
 
 class Compras extends StatefulWidget {
   final Function(Widget) onSelectPage;
-
   Compras({required this.onSelectPage});
-
   @override
   _ComprasState createState() => _ComprasState();
 }
@@ -17,28 +15,41 @@ class _ComprasState extends State<Compras> {
   List<Compraview> compras = [];
   List<Compraview> filteredCompras = [];
   TextEditingController searchController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     fetchCompras();
     searchController.addListener(_filterItems);
+    print("creo que apenas accediste ");
   }
 
   Future<void> fetchCompras() async {
-    final response =
-        await http.get(Uri.parse('http://localhost:5000/api/Compra/compras'));
-
+    final response = await http
+        .get(Uri.parse('http://192.168.175.212:5000/api/Compra/compras'));
+    print(response.statusCode);
+    print(response.body);
+    print("antes del if si entre al metodo");
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
       setState(() {
         compras =
             jsonResponse.map((data) => Compraview.fromJson(data)).toList();
         filteredCompras = compras;
+        print(response);
       });
     } else {
       throw Exception('Failed to load compras');
     }
+    print("ultimo abajo del else si salgo");
+    print(response);
+
+    print("antes del metodo de ramirez");
+
+    if (response.statusCode != 200) {
+      print('Error: ${response.reasonPhrase}');
+      throw Exception('Failed to load compras');
+    }
+    print("despues del metodo de ramirez");
   }
 
   @override
